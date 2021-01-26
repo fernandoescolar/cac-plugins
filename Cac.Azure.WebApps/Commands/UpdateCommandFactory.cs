@@ -7,13 +7,20 @@ namespace Cac.Azure.WebApps.Commands
 {
     internal class UpdateCommandFactory 
     {
-        public static T CreateCommand<T>(Webapp target, ServicePrincipal servicePrincipal, IDictionary<string, string> requestedSettings, bool includeDeletion)
-            where T : UpdateCommand, new()
+        public static UpdateAppSettingsCommand CreateAppSettingsCommand(Webapp target, ServicePrincipal servicePrincipal, IDictionary<string, string> requestedSettings, bool includeDeletion)
         {
             var webapp = new AzureWebapp(target, servicePrincipal);
             var settingsInTarget = webapp.GetAppSettings();
             var operations = GetOperations(requestedSettings, settingsInTarget, includeDeletion);
-            return new T { Webapp = target, ServicePrincipal = servicePrincipal, Operations = operations };
+            return new UpdateAppSettingsCommand { Webapp = target, ServicePrincipal = servicePrincipal, Operations = operations };
+        }
+
+        public static UpdateConnectionStringsCommand CreateConnectionStringsCommand(Webapp target, ServicePrincipal servicePrincipal, IDictionary<string, string> requestedSettings, bool includeDeletion)
+        {
+            var webapp = new AzureWebapp(target, servicePrincipal);
+            var settingsInTarget = webapp.GetConnectionStrings();
+            var operations = GetOperations(requestedSettings, settingsInTarget, includeDeletion);
+            return new UpdateConnectionStringsCommand { Webapp = target, ServicePrincipal = servicePrincipal, Operations = operations };
         }
 
         private static IEnumerable<IOperation> GetOperations(IDictionary<string, string> requestedSettings, IDictionary<string, string> settingsInTarget, bool includeDeletion)

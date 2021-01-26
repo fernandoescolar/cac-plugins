@@ -14,7 +14,7 @@ namespace Cac.Azure.WebApps.Activities
         protected override Task<IEnumerable<ICacCommand>> OnPlanAsync(UpdateModel model, IExecutionContext context)
         {
             var settings = model.Settings ?? GetSettings(model.SettingsFilepath) ?? new Dictionary<string, string>();
-            var command = UpdateCommandFactory.CreateCommand<UpdateConnectionStringsCommand>(model.Webapp, model.ServicePrincipal, settings, model.IncludeDeletion);
+            var command = UpdateCommandFactory.CreateConnectionStringsCommand(model.Webapp, model.ServicePrincipal, settings, model.IncludeDeletion);
 
             return Task.FromResult<IEnumerable<ICacCommand>>(new ICacCommand[] { command });
         }

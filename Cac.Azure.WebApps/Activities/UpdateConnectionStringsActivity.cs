@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Cac.Azure.WebApps.Activities
 {
-    [Name("azure_webapp_update_appsettings")]
-    public class UpdateAppSettingsActivity : CacActivity<UpdateModel>
+    [Name("azure_webapp_update_connection_strings")]
+    public class UpdateConnectionStringsActivity : CacActivity<UpdateModel>
     {
         protected override Task<IEnumerable<ICacCommand>> OnPlanAsync(UpdateModel model, IExecutionContext context)
         {
             var settings = model.Settings ?? GetSettings(model.SettingsFilepath) ?? new Dictionary<string, string>();
-            var command = UpdateCommandFactory.CreateCommand<UpdateAppSettingsCommand>(model.Webapp, model.ServicePrincipal, settings, model.IncludeDeletion);
+            var command = UpdateCommandFactory.CreateCommand<UpdateConnectionStringsCommand>(model.Webapp, model.ServicePrincipal, settings, model.IncludeDeletion);
 
             return Task.FromResult<IEnumerable<ICacCommand>>(new ICacCommand[] { command });
         }

@@ -5,14 +5,15 @@ using System.Collections.Generic;
 
 namespace Cac.Azure.WebApps.Commands
 {
-    internal class UpdateAppSettingsCommandFactory
+    internal class UpdateCommandFactory 
     {
-        public static UpdateAppSettingsCommand CreateCommand(Webapp target, ServicePrincipal servicePrincipal, IDictionary<string, string> requestedSettings, bool includeDeletion)
+        public static T CreateCommand<T>(Webapp target, ServicePrincipal servicePrincipal, IDictionary<string, string> requestedSettings, bool includeDeletion)
+            where T : UpdateCommand, new()
         {
             var webapp = new AzureWebapp(target, servicePrincipal);
             var settingsInTarget = webapp.GetAppSettings();
             var operations = GetOperations(requestedSettings, settingsInTarget, includeDeletion);
-            return new UpdateAppSettingsCommand { Webapp = target, ServicePrincipal = servicePrincipal, Operations = operations };
+            return new T { Webapp = target, ServicePrincipal = servicePrincipal, Operations = operations };
         }
 
         private static IEnumerable<IOperation> GetOperations(IDictionary<string, string> requestedSettings, IDictionary<string, string> settingsInTarget, bool includeDeletion)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Cac.Azure.WebApps.Model
 {
-    public class UpdateAppSettingsModel : GetAppSettingsModel
+    public class UpdateModel : GetModel
     {
         [YamlProperty("settings")]
         public Dictionary<string, string> Settings { get; set; }

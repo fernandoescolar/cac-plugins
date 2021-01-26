@@ -2,7 +2,7 @@
 
 namespace Cac.Azure.WebApps.Model
 {
-    public class GetAppSettingsModel
+    public class GetModel 
     {
         [YamlProperty("webapp", IsRequired = true)]
         public Webapp Webapp { get; set; }

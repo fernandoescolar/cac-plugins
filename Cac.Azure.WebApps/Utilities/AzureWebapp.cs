@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Cac.Azure.WebApps.Utilities
 {
-    internal class AzureWebapp
+    public class AzureWebapp
     {
         private readonly Webapp _target;
         private readonly ServicePrincipal _servicePrincipal;
@@ -26,9 +26,21 @@ namespace Cac.Azure.WebApps.Utilities
             return task.Result;
         }
 
+        public Dictionary<string, string> GetConnectionStrings()
+        {
+            var task = ListConnectionStringsAsync(_target);
+            task.Wait();
+            return task.Result;
+        }
+
         public Task<Dictionary<string, string>> GetAppSettingsAsync()
         {
             return ListAppSettingsAsync(_target);
+        }
+
+        public Task<Dictionary<string, string>> GetConnectionStringsAsync()
+        {
+            return ListConnectionStringsAsync(_target);
         }
 
         public void UpdateAppSettings(Dictionary<string, string> settings, IEnumerable<string> keysToDelete)
@@ -49,9 +61,50 @@ namespace Cac.Azure.WebApps.Utilities
             task.Wait();
         }
 
-        private async Task<Dictionary<string, string>> ListAppSettingsAsync(Webapp webapp)
+        public void UpdateConnectionStrings(Dictionary<string, string> newValues, IEnumerable<string> keysToDelete)
+        {
+            var connectionStrings = GetConnectionStrings();
+            foreach (var s in newValues)
+            {
+                connectionStrings[s.Key] = s.Value;
+            }
+
+            foreach (var key in keysToDelete)
+            {
+                if (connectionStrings.ContainsKey(key))
+                    connectionStrings.Remove(key);
+            }
+
+            var task = UpdateConnectionStringsAsync(_target, connectionStrings);
+            task.Wait();
+        }
+
+        private Task<Dictionary<string, string>> ListAppSettingsAsync(Webapp webapp)
         {
             var url = $"https://management.azure.com/{webapp.AppResourceId}/config/appsettings/list?api-version=2019-08-01";
+            return ListAsync(url);
+        }
+
+        private Task UpdateAppSettingsAsync(Webapp webapp, Dictionary<string, string> settings)
+        {
+            var url = $"https://management.azure.com/{webapp.AppResourceId}/config/appsettings?api-version=2019-08-01";
+            return UpdateAsync(url, settings);
+        }
+
+        private Task<Dictionary<string, string>> ListConnectionStringsAsync(Webapp webapp)
+        {
+            var url = $"https://management.azure.com/{webapp.AppResourceId}/config/connectionstrings/list?api-version=2019-08-01";
+            return ListAsync(url);
+        }
+
+        private Task UpdateConnectionStringsAsync(Webapp webapp, Dictionary<string, string> connectionStrings)
+        {
+            var url = $"https://management.azure.com/{webapp.AppResourceId}/config/connectionstrings?api-version=2019-08-01";
+            return UpdateAsync(url, connectionStrings);
+        }
+
+        private async Task<Dictionary<string, string>> ListAsync(string url)
+        {
             var auth = await GetAuthAsync();
             using (var client = new HttpClient())
             {
@@ -64,14 +117,13 @@ namespace Cac.Azure.WebApps.Utilities
             }
         }
 
-        private async Task UpdateAppSettingsAsync(Webapp webapp, Dictionary<string, string> settings)
+        private async Task UpdateAsync(string url, Dictionary<string, string> valueTypePairList)
         {
-            var url = $"https://management.azure.com/{webapp.AppResourceId}/config/appsettings?api-version=2019-08-01";
             var auth = await GetAuthAsync();
             var data = new Dictionary<string, object>
             {
                 { "kind", "app" },
-                { "properties", settings }
+                { "properties", valueTypePairList }
             };
             using (var client = new HttpClient())
             {
